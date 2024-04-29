@@ -61,6 +61,7 @@ class config:
                 clientPort=0
                 downPath=""
                 upPath=""
+                
                 for l in f:
                     sub=l.strip().split("=")
                     if(sub[0]==self.server_port):
@@ -72,10 +73,8 @@ class config:
                     elif(sub[0]==self.download):
                         downPath=sub[1]
                     elif(sub[0]==self.upload):
-                        upPath=sub[1]    
-                    else:
-                        pass  
-                return serName, serPort, clientPort, downPath,upPath  
+                        upPath=sub[1]  
+                return serName, serPort, clientPort, downPath, upPath  
         except:
             print(Exception.message())
      

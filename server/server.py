@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 Script for server
 @author: hao
@@ -28,6 +29,19 @@ class server:
         while (l):
             serverSocket.send(l)
             l = f.read(1024)
+        f.close()
+
+    def uploadFile(self,serverSocket,fileName):
+        f = open(fileName, 'wb')
+        l = serverSocket.recv(1024)
+
+        while l:
+            f.write(l)
+            l = serverSocket.recv(1024)
+           
+        # Send a success response to the client
+        serverSocket.send(protocol.prepareMsg(protocol.HEAD_UPLOAD,"File uploaded successfully"))
+        f.close()
 
     # Main function of server, start the file sharing service
     def start(self):

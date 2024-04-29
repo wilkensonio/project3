@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 Script for client side
 @author: hao
@@ -10,12 +11,12 @@ import os
 
 class client:
     
-    fileList=[] # list to store the file information
-    uploadList=[] # list to store list in the client's folder
+    fileList=[] # list to store the file information 
+    uploadList=[]
 
     #Constructor: load client configuration from config file
     def __init__(self):
-        self.serverName, self.serverPort, self.clientPort, self.downloadPath,self.uploadPath = config.config().readClientConfig()
+        self.serverName, self.serverPort, self.clientPort, self.downloadPath, self.uploadPath = config.config().readClientConfig()
         # print("Server Name:",self.serverName)
         # print("Download Path:",self.downloadPath)
         # print("Upload Path:",self.uploadPath)
@@ -31,6 +32,7 @@ class client:
         # ADD one line here for uploading files
         print("3. Review the List of Available Files to Upload")
         print("4. Upload File")
+        
         print("5. Quit")
 
     # Function to get user selection from the menu
@@ -42,9 +44,8 @@ class client:
         # you accept
         while ans>5 or ans<1:
             self.printMenu()
-            try:
-                print("\nPlease enter the number of the operation you want to perform")
-                ans=int(input("Choose an option: "))
+            try: 
+                ans=int(input("\nChoose an option: "))
             except:
                 ans=0
             if (ans<=5) and (ans>=1):
@@ -57,7 +58,8 @@ class client:
         serverPort = self.serverPort
         clientSocket = socket(AF_INET, SOCK_STREAM)
         clientSocket.connect((serverName,serverPort))
-        return clientSocket
+        return clientSocket 
+    
 
     # Get file list from server by sending the request
     def getFileList(self):
@@ -79,6 +81,7 @@ class client:
         for f in self.fileList:
             count+=1
             print('{:<3d}{}'.format(count,f))
+        print()
 
     # Function to select the file from file list by file number,
     # return the file name user selected
@@ -86,11 +89,13 @@ class client:
         if(len(self.fileList)==0):
             self.getFileList()
         ans=-1
+        print()
         while ans<0 or ans>len(self.fileList)+1:
-            self.printFileList()
-            print("Please select the file you want to download from the list (enter the number of files):")
+            self.printFileList() 
             try:
+                print("Please select the file you want to download from the list (enter the number of files):")
                 ans=int(input("File Number: "))
+                print()
             except:
                 ans=-1
             if (ans>0) and (ans<len(self.fileList)+1):
@@ -102,7 +107,7 @@ class client:
         mySocket=self.connect()
         mySocket.send(protocol.prepareMsg(protocol.HEAD_DOWNLOAD, fileName))
         with open(self.downloadPath+"/"+fileName, 'wb') as f:
-            print ('file opened')
+            print("\ndownloaded from server") 
             while True:
                 #print('receiving data...')
                 data = mySocket.recv(1024)
@@ -111,53 +116,34 @@ class client:
                     break
             # write data to a file
                 f.write(data)
-        print(fileName+" has been downloaded!")
+        print(fileName+" has been downloaded!\n")
         mySocket.close()
 
     #********************************************
     # Please complete the upLoadFile function, the function takes a file name as
     # an input
-    def upLoadFile(self,fileName):
-        mySocket=self.connect()
-        mySocket.send(protocol.prepareMsg(protocol.HEAD_UPLOAD, fileName))
-        with open(self.downloadPath+"/"+fileName, 'rb') as f:
-            print(fileName+" sent to Server")
-            data = f.read(1024)
-            while data:
-                mySocket.send(data)
+    def upLoadFile(self,fileName): 
+         
+        try:  
+            s_socket = self.connect()  
+            s_socket.send(protocol.prepareMsg(protocol.HEAD_UPLOAD, fileName))
+
+            with open(self.downloadPath+"/"+fileName, 'rb') as f: 
+                print("\nUploading file to server")
                 data = f.read(1024)
-            print(fileName+" has been uploaded")
-        mySocket.close()
-            
+                while data:
+                    s_socket.send(data)
+                    data = f.read(1024) 
+                print(fileName+" has been uploaded\n")
+            s_socket.close()
 
-
-    #********************************************
-    # Please complete the select Upload file function,
-    # The function should print out a list of files from upload folder for user to
-    # select, and user need to chose one file.
-    # The return value should be a file name
-
-    def selectUploadFile(self):
-        ans = -1
-        upload_list_length = len(self.uploadList) 
+        except FileNotFoundError as e:
+            print("File not found [" + str(e) + "]\n")
         
-        if upload_list_length == 0 :
-            self.getUploadList()
-            
-        while ans < 0 or ans > upload_list_length + 1:
-            self.printUploadList()
-            print("Please select the file you want to upload from the list (enter the number of files):")
-            try:
-                ans=int(input("File Number : "))
-            except:
-                ans = -1
-            if ans > 0 and ans < upload_list_length + 1:
-                print('triggered')
-                return self.uploadList[ans-1]
-            print("Invalid number")
 
-    def getUploadList(self):
-        self.uploadList = os.listdir(self.downloadPath)
+    
+    def getUploadList(self): 
+        self.uploadList = os.listdir(self.downloadPath) 
         return self.uploadList
     
     # function to print files in the list with the file number
@@ -171,6 +157,34 @@ class client:
             for u in self.uploadList:
                 count += 1
                 print('{:<3d}{}'.format(count,u))
+
+    #********************************************
+    # Please complete the select Upload file function,
+    # The function should print out a list of files from upload folder for user to
+    # select, and user need to chose one file.
+    # The return value should be a file name
+
+    def selectUploadFile(self):
+      
+        upload_list_length = len(self.uploadList)\
+        if self.uploadList else len(self.getUploadList()) 
+
+        ans = -1
+            
+        while ans < 0 or ans > upload_list_length + 1:
+            self.printUploadList()
+            try:
+                print("\nPlease select the file you want to upload from the list (enter the number of files):") 
+                ans=int(input("File Number : "))
+                print()
+
+                if ans > 0 and ans < (upload_list_length + 1): 
+                    return self.uploadList[ans-1] 
+            except:
+                ans = -1
+                print("Invalid number")
+            
+ 
         
     # Main logic of the client, start the client application
     def start(self):
@@ -187,6 +201,7 @@ class client:
                 self.printUploadList()
             elif opt==4:
                 self.upLoadFile(self.selectUploadFile())
+                 
 
 
             #**************************
@@ -195,6 +210,6 @@ class client:
                 pass
                 
 def main():
-    c=client()
+    c=client() 
     c.start()
 main()

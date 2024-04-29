@@ -21,6 +21,7 @@ class config:
     server="SERVER"
     client_port="CLIENT_PORT"
     download="DOWNLOAD"
+    upload = "UPLOAD"   
     serverConfig="server.config"
     clientConfig="client.config"
     
@@ -51,6 +52,7 @@ class config:
         @return: serverPort
         @return: clientPort
         @return: downloadPath
+        @return: uploadPath
         '''
         try:
             with open(self.clientConfig,'r') as f:
@@ -59,6 +61,7 @@ class config:
                 clientPort=0
                 downPath=""
                 upPath="" 
+
                 for l in f:
                     sub=l.strip().split("=")
                     if(sub[0]==self.server_port):
@@ -69,8 +72,10 @@ class config:
                         clientPort=sub[1]   
                     elif(sub[0]==self.download):
                         downPath=sub[1]     
+                    elif(sub[0]==self.upload):
+                        upPath=sub[1] 
                     else:
-                        pass  
+                        pass
                 return serName, serPort, clientPort, downPath, upPath 
         except:
             print(Exception.message())
